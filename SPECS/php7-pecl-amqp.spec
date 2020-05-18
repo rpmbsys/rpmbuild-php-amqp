@@ -17,15 +17,15 @@
 #global prever      beta4
 
 Summary:       Communicate with any AMQP compliant server
-Name:          php-pecl-amqp
+Name:          php7-pecl-amqp
 Version:       1.10.2
 Release:       1%{?dist}
 License:       PHP
 URL:           https://pecl.php.net/package/amqp
 Source0:       https://pecl.php.net/get/%{pecl_name}-%{version}%{?prever}.tgz
 
-BuildRequires: php-devel > 5.6
-BuildRequires: php-pear
+BuildRequires: php7-devel
+BuildRequires: php7-pear
 BuildRequires: pkgconfig(librabbitmq) >= 0.7.1
 %if %{with_tests}
 BuildRequires: rabbitmq-server
@@ -35,7 +35,9 @@ Requires:      php(zend-abi) = %{php_zend_api}
 Requires:      php(api) = %{php_core_api}
 
 Provides:      php-%{pecl_name}               = %{version}
+Provides:      php7-%{pecl_name}              = %{version}
 Provides:      php-%{pecl_name}%{?_isa}       = %{version}
+Provides:      php7-%{pecl_name}%{?_isa}      = %{version}
 Provides:      php-pecl(%{pecl_name})         = %{version}
 Provides:      php-pecl(%{pecl_name})%{?_isa} = %{version}
 
@@ -125,14 +127,14 @@ cp -pr NTS ZTS
 
 %build
 cd NTS
-%{_bindir}/phpize
-%configure --with-php-config=%{_bindir}/php-config
+%{_bindir}/phpize7
+%configure --with-php-config=%{_bindir}/php7-config
 make %{?_smp_mflags}
 
 %if %{with_zts}
 cd ../ZTS
-%{_bindir}/zts-phpize
-%configure --with-php-config=%{_bindir}/zts-php-config
+%{_bindir}/zts-phpize7
+%configure --with-php-config=%{_bindir}/zts-php7-config
 make %{?_smp_mflags}
 %endif
 

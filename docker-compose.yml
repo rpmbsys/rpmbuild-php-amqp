@@ -1,0 +1,40 @@
+version: "3.5"
+services:
+  centos7amqp:
+    volumes:
+      - rpms:/home/centos/rpmbuild/SRPMS
+      - rpm7:/home/centos/rpmbuild/RPMS
+    build:
+      context: .
+  centos7amqprel:
+    volumes:
+      - rpms:/home/centos/rpmbuild/SRPMS
+      - rpm7:/home/centos/rpmbuild/RPMS
+    build:
+      context: .
+      dockerfile: Dockerfile.rel
+  centos8amqp:
+    volumes:
+      - rpms:/home/centos/rpmbuild/SRPMS
+      - rpm8:/home/centos/rpmbuild/RPMS
+    build:
+      context: .
+      args:
+        centos: 8
+  centos8amqprel:
+    volumes:
+      - rpms:/home/centos/rpmbuild/SRPMS
+      - rpm8:/home/centos/rpmbuild/RPMS
+    build:
+      context: .
+      args:
+        centos: 8
+      dockerfile: Dockerfile.rel
+
+volumes:
+  rpms:
+    name: rpms
+  rpm7:
+    name: rpm7
+  rpm8:
+    name: rpm8
