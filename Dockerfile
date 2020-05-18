@@ -1,11 +1,13 @@
 ARG centos=7
 ARG image=php-7.1
 
-FROM aursu/peclbuild:${centos}-${image}
+FROM aursu/pearbuild:${centos}-${image}
+
+# yum install --enablerepo=PowerTools "pkgconfig(librabbitmq)"
 
 RUN yum -y install \
-        redis \
-        liblzf-devel \
+        rabbitmq-server \
+        librabbitmq-devel \
     && yum clean all && rm -rf /var/cache/yum
 
 COPY SOURCES ${BUILD_TOPDIR}/SOURCES
