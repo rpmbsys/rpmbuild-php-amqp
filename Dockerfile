@@ -1,9 +1,7 @@
-ARG centos=7
+ARG centos=7.8.2003
 ARG image=php-7.1
 
 FROM aursu/pearbuild:${centos}-${image}
-
-# yum install --enablerepo=PowerTools "pkgconfig(librabbitmq)"
 
 RUN yum -y install \
         rabbitmq-server \
