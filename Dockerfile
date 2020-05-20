@@ -5,10 +5,10 @@ ARG os_version_id=7
 
 FROM aursu/pearbuild:${centos}-${image}
 
-ENV ID=$os_id
-ENV VERSION_ID=$os_version_id
+ENV OS_ID=$os_id
+ENV OS_VERSION_ID=$os_version_id
 
-RUN curl -sSf "https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/config_file.repo?os=${ID}&dist=${VERSION_ID}&source=script" -o /etc/yum.repos.d/rabbitmq_rabbitmq-server.repo
+RUN curl -sSf "https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/config_file.repo?os=${OS_ID}&dist=${OS_VERSION_ID}&source=script" -o /etc/yum.repos.d/rabbitmq_rabbitmq-server.repo
 
 RUN yum -y install \
         rabbitmq-server \
