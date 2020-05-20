@@ -25,6 +25,7 @@ services:
       context: .
       args:
         centos: $OS8
+        os_version_id: 8
   centos8amqprel:
     volumes:
       - rpms:/home/centos/rpmbuild/SRPMS
@@ -33,6 +34,7 @@ services:
       context: .
       args:
         centos: $OS8
+        os_version_id: 8
       dockerfile: Dockerfile.rel
 
 volumes:

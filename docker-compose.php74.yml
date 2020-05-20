@@ -18,6 +18,7 @@ services:
       args:
         centos: $OS8
         image: php-7.4
+        os_version_id: 8
 
 volumes:
   rpms:
