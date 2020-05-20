@@ -13,7 +13,8 @@ COPY system/etc/yum.repos.d/erlang-solutions.repo /etc/yum.repos.d/erlang-soluti
 
 RUN rpm --import https://packages.erlang-solutions.com/rpm/erlang_solutions.asc \
     && curl -sSf "https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/config_file.repo?os=${OS_ID}&dist=${OS_VERSION_ID}&source=script" -o /etc/yum.repos.d/rabbitmq_rabbitmq-server.repo \
-    && rpm --import https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey
+    && rpm --import https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey \
+    && yum -q makecache -y --disablerepo='*' --enablerepo='rabbitmq_rabbitmq-server'
 
 RUN yum -y install \
         rabbitmq-server \
