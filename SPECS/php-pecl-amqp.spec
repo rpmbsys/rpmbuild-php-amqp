@@ -1,6 +1,6 @@
 # Fedora spec file for php-pecl-amqp
 #
-# Copyright (c) 2012-2020 Remi Collet
+# Copyright (c) 2012-2021 Remi Collet
 # License: CC-BY-SA
 # http://creativecommons.org/licenses/by-sa/4.0/
 #
@@ -22,11 +22,16 @@
 Summary:       Communicate with any AMQP compliant server
 Name:          php-pecl-amqp
 Version:       1.10.2
-Release:       1%{?dist}
+Release:       4%{?dist}
 License:       PHP
 URL:           https://pecl.php.net/package/amqp
 Source0:       https://pecl.php.net/get/%{pecl_name}-%{version}%{?prever}.tgz
 
+Patch0:        https://github.com/php-amqp/php-amqp/commit/96cd5cb5eddd3db2faaa3643dad2fe4677d7c438.patch
+Patch1:        https://patch-diff.githubusercontent.com/raw/php-amqp/php-amqp/pull/383.patch
+
+BuildRequires: make
+BuildRequires: gcc
 BuildRequires: php-devel > 5.6
 BuildRequires: php-pear
 BuildRequires: pkgconfig(librabbitmq) >= 0.7.1
@@ -60,6 +65,9 @@ sed -e 's/role="test"/role="src"/' \
 
 mv %{pecl_name}-%{version}%{?prever} NTS
 cd NTS
+%patch0 -p1 -b .up
+%patch1 -p1 -b .pr383
+
 sed -e 's/CFLAGS="-I/CFLAGS="$CFLAGS -I/' -i config.m4
 
 # Upstream often forget to change this
@@ -229,6 +237,11 @@ exit $ret
 
 
 %changelog
+* Thu Mar  4 2021 Remi Collet <remi@remirepo.net> - 1.10.2-4
+- rebuild for https://fedoraproject.org/wiki/Changes/php80
+- add patches for PHP 8 from upstream and
+  https://github.com/php-amqp/php-amqp/pull/383
+
 * Mon Apr  6 2020 Remi Collet <remi@remirepo.net> - 1.10.2-1
 - update to 1.10.2
 
