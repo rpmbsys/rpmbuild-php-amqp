@@ -192,14 +192,14 @@ export RABBITMQ_MNESIA_BASE=$PWD/base
 ret=0
 pushd NTS
 : Run the upstream test Suite for NTS extension
-TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so" \
+TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so -d error_reporting=1" \
 %{__php} -n run-tests.php -q --show-diff || ret=1
 popd
 
 %if %{with_zts}
 pushd ZTS
 : Run the upstream test Suite for ZTS extension
-TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so" \
+TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so -d error_reporting=1" \
 %{__ztsphp} -n run-tests.php -q --show-diff || ret=1
 popd
 %endif
