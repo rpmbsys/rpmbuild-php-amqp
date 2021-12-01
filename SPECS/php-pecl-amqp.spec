@@ -17,22 +17,22 @@
 %global with_zts    0%{!?_without_zts:%{?__ztsphp:1}}
 %global with_tests  0%{!?_without_tests:1}
 %global ini_name    40-%{pecl_name}.ini
-#global prever      beta4
+
+%global upstream_version 1.11.0
+%global upstream_prever  RC1
+%global upstream_lower   rc1
 
 Summary:       Communicate with any AMQP compliant server
 Name:          php-pecl-amqp
-Version:       1.10.2
-Release:       4%{?dist}
+Version:       %{upstream_version}%{?upstream_prever:~%{upstream_lower}}
+Release:       1%{?dist}
 License:       PHP
 URL:           https://pecl.php.net/package/amqp
-Source0:       https://pecl.php.net/get/%{pecl_name}-%{version}%{?prever}.tgz
-
-Patch0:        https://github.com/php-amqp/php-amqp/commit/96cd5cb5eddd3db2faaa3643dad2fe4677d7c438.patch
-Patch1:        https://patch-diff.githubusercontent.com/raw/php-amqp/php-amqp/pull/383.patch
+Source0:       https://pecl.php.net/get/%{pecl_name}-%{upstream_version}%{?upstream_prever}.tgz
 
 BuildRequires: make
 BuildRequires: gcc
-BuildRequires: php-devel > 5.6
+BuildRequires: php-devel >= 5.6
 BuildRequires: php-pear
 BuildRequires: pkgconfig(librabbitmq) >= 0.7.1
 %if %{with_tests}
@@ -63,17 +63,15 @@ sed -e 's/role="test"/role="src"/' \
     -e '/LICENSE/s/role="doc"/role="src"/' \
     -i package.xml
 
-mv %{pecl_name}-%{version}%{?prever} NTS
+mv %{pecl_name}-%{upstream_version}%{?upstream_prever} NTS
 cd NTS
-%patch0 -p1 -b .up
-%patch1 -p1 -b .pr383
 
 sed -e 's/CFLAGS="-I/CFLAGS="$CFLAGS -I/' -i config.m4
 
 # Upstream often forget to change this
 extver=$(sed -n '/#define PHP_AMQP_VERSION/{s/.* "//;s/".*$//;p}' php_amqp.h)
-if test "x${extver}" != "x%{version}%{?prever}"; then
-   : Error: Upstream version is ${extver}, expecting %{version}%{?prever}.
+if test "x${extver}" != "x%{upstream_version}%{?upstream_prever}"; then
+   : Error: Upstream extension version is ${extver}, expecting %{upstream_version}%{?upstream_prever}.
    exit 1
 fi
 cd ..
@@ -173,13 +171,13 @@ done
 : Minimal load test for NTS extension
 %{__php} --no-php-ini \
     --define extension=NTS/modules/%{pecl_name}.so \
-    -m | grep %{pecl_name}
+    -m | grep '^%{pecl_name}$'
 
 %if %{with_zts}
 : Minimal load test for ZTS extension
 %{__ztsphp} --no-php-ini \
     --define extension=ZTS/modules/%{pecl_name}.so \
-    -m | grep %{pecl_name}
+    -m | grep '^%{pecl_name}$'
 %endif
 
 %if %{with_tests}
@@ -194,21 +192,15 @@ export RABBITMQ_MNESIA_BASE=$PWD/base
 ret=0
 pushd NTS
 : Run the upstream test Suite for NTS extension
-TEST_PHP_EXECUTABLE=%{__php} \
 TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so" \
-NO_INTERACTION=1 \
-REPORT_EXIT_STATUS=1 \
-%{__php} -n run-tests.php --show-diff || ret=1
+%{__php} -n run-tests.php -q --show-diff || ret=1
 popd
 
 %if %{with_zts}
 pushd ZTS
 : Run the upstream test Suite for ZTS extension
-TEST_PHP_EXECUTABLE=%{__ztsphp} \
 TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so" \
-NO_INTERACTION=1 \
-REPORT_EXIT_STATUS=1 \
-%{__ztsphp} -n run-tests.php --show-diff || ret=1
+%{__ztsphp} -n run-tests.php -q --show-diff || ret=1
 popd
 %endif
 
@@ -237,6 +229,9 @@ exit $ret
 
 
 %changelog
+* Tue Nov  2 2021 Remi Collet <remi@remirepo.net> - 1.11.0~rc1-1
+- update to 1.11.0RC1
+
 * Thu Mar  4 2021 Remi Collet <remi@remirepo.net> - 1.10.2-4
 - rebuild for https://fedoraproject.org/wiki/Changes/php80
 - add patches for PHP 8 from upstream and
