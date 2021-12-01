@@ -195,7 +195,7 @@ ret=0
 pushd NTS
 : Run the upstream test Suite for NTS extension
 TEST_PHP_EXECUTABLE=%{__php} \
-TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so" \
+TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so -d error_reporting=1" \
 NO_INTERACTION=1 \
 REPORT_EXIT_STATUS=1 \
 %{__php} -n run-tests.php --show-diff || ret=1
@@ -205,7 +205,7 @@ popd
 pushd ZTS
 : Run the upstream test Suite for ZTS extension
 TEST_PHP_EXECUTABLE=%{__ztsphp} \
-TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so" \
+TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so -d error_reporting=1" \
 NO_INTERACTION=1 \
 REPORT_EXIT_STATUS=1 \
 %{__ztsphp} -n run-tests.php --show-diff || ret=1
