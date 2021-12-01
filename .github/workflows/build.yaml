@@ -7,9 +7,9 @@ env:
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
   OS7: 7.9.2009
-  OS8: 8.3.2011
+  OS8: 8.4.2105
   OS7TAG: 7.9.2009
-  OS8TAG: 8.3.2011
+  OS8TAG: 8.4.2105
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -24,13 +24,13 @@ jobs:
             repo: php74custom
             build: centos8amqp
             uploader: centos8bintray
-          - compose-file: docker-compose.php73.yml
-            repo: php73custom
-            build: centos7amqpphp73
+          - compose-file: docker-compose.php81.yml
+            repo: php81custom
+            build: centos7amqpphp81
             uploader: centos7bintray
-          - compose-file: docker-compose.php73.yml
-            repo: php73custom
-            build: centos8amqpphp73
+          - compose-file: docker-compose.php81.yml
+            repo: php81custom
+            build: centos8amqpphp81
             uploader: centos8bintray
           - compose-file: docker-compose.php80.yml
             repo: php8custom
