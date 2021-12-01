@@ -19,8 +19,6 @@
 %global ini_name    40-%{pecl_name}.ini
 
 %global upstream_version 1.11.0
-%global upstream_prever  RC1
-%global upstream_lower   rc1
 
 Summary:       Communicate with any AMQP compliant server
 Name:          php-pecl-amqp
@@ -192,14 +190,14 @@ export RABBITMQ_MNESIA_BASE=$PWD/base
 ret=0
 pushd NTS
 : Run the upstream test Suite for NTS extension
-TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so -d error_reporting=1" \
+TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so" \
 %{__php} -n run-tests.php -q --show-diff || ret=1
 popd
 
 %if %{with_zts}
 pushd ZTS
 : Run the upstream test Suite for ZTS extension
-TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so -d error_reporting=1" \
+TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so" \
 %{__ztsphp} -n run-tests.php -q --show-diff || ret=1
 popd
 %endif
@@ -229,6 +227,9 @@ exit $ret
 
 
 %changelog
+* Wed Dec  1 2021 Alexander Ursu <alexander.ursu@gmail.com> - 1.11.0
+- update to 1.11.0
+
 * Tue Nov  2 2021 Remi Collet <remi@remirepo.net> - 1.11.0~rc1-1
 - update to 1.11.0RC1
 
