@@ -12,16 +12,14 @@ env:
   global:
     - ARTIFACTORY_URL=https://rpmb.jfrog.io
     - OS7=7.9.2009
-    - OS8=8.4.2105
+    - OS8=stream8
     - OS7TAG=7.9.2009
-    - OS8TAG=8.4.2105
+    - OS8TAG=stream8
   jobs:
     - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php74custom BUILD=centos7amqp      UPLOADER=centos7bintray
-    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php74custom BUILD=centos8amqp      UPLOADER=centos8bintray
+    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php74custom BUILD=stream8amqp      UPLOADER=stream8bintray REPO_PATH=centos/8-stream
     - BUILD_COMPOSE_FILE=docker-compose.php81.yml BINTRAY_REPO=php81custom BUILD=centos7amqpphp81 UPLOADER=centos7bintray
-    - BUILD_COMPOSE_FILE=docker-compose.php81.yml BINTRAY_REPO=php81custom BUILD=centos8amqpphp81 UPLOADER=centos8bintray
-    - BUILD_COMPOSE_FILE=docker-compose.php80.yml BINTRAY_REPO=php8custom BUILD=centos7amqpphp80 UPLOADER=centos7bintray
-    - BUILD_COMPOSE_FILE=docker-compose.php80.yml BINTRAY_REPO=php8custom BUILD=centos8amqpphp80 UPLOADER=centos8bintray
+    - BUILD_COMPOSE_FILE=docker-compose.php81.yml BINTRAY_REPO=php81custom BUILD=stream8amqpphp81 UPLOADER=stream8bintray REPO_PATH=centos/8-stream
 
 before_script:
   - docker-compose -f ${BUILD_COMPOSE_FILE} build --no-cache ${BUILD}
@@ -34,6 +32,6 @@ before_deploy:
 
 deploy:
   provider: script
-  script: docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm -e BINTRAY_USER=$BINTRAY_USER -e BINTRAY_API_KEY=$BINTRAY_API_KEY -e BINTRAY_REPO=$BINTRAY_REPO -e ARTIFACTORY_URL=$ARTIFACTORY_URL ${UPLOADER}
+  script: docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm -e BINTRAY_USER=$BINTRAY_USER -e BINTRAY_API_KEY=$BINTRAY_API_KEY -e BINTRAY_REPO=$BINTRAY_REPO -e ARTIFACTORY_URL=$ARTIFACTORY_URL -e REPO_PATH=$REPO_PATH ${UPLOADER}
   on:
     all_branches: true
