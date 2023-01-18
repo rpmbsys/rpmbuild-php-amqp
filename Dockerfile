@@ -1,19 +1,16 @@
-ARG centos=7.9.2009
+ARG os=8.7.20221112
 ARG image=php-7.4
 
-FROM aursu/pearbuild:${centos}-${image}
+FROM aursu/pearbuild:${os}-${image}
 
-COPY system/etc/yum.repos.d/erlang-solutions.repo /etc/yum.repos.d/erlang-solutions.repo
+RUN dnf -y install \
+        centos-release-rabbitmq-38 \
+    && dnf clean all && rm -rf /var/cache/dnf
 
-RUN rpm --import https://packages.erlang-solutions.com/rpm/erlang_solutions.asc \
-    && curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.rpm.sh -o script.rpm.sh \
-    && chmod +x script.rpm.sh  \
-    && bash script.rpm.sh
-
-RUN yum -y install \
+RUN dnf -y install \
         rabbitmq-server \
         librabbitmq-devel \
-    && yum clean all && rm -rf /var/cache/yum
+    && dnf clean all && rm -rf /var/cache/yum
 
 COPY SOURCES ${BUILD_TOPDIR}/SOURCES
 COPY SPECS ${BUILD_TOPDIR}/SPECS
