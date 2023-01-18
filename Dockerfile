@@ -10,7 +10,9 @@ RUN dnf -y install \
 RUN dnf -y install \
         rabbitmq-server \
         librabbitmq-devel \
-    && dnf clean all && rm -rf /var/cache/yum
+    && dnf clean all && rm -rf /var/cache/dnf \
+    && usermod -G rabbitmq centos \
+    && chmod 770 /var/lib/rabbitmq
 
 COPY SOURCES ${BUILD_TOPDIR}/SOURCES
 COPY SPECS ${BUILD_TOPDIR}/SPECS
