@@ -1,6 +1,6 @@
 # Fedora spec file for php-pecl-amqp
 #
-# Copyright (c) 2012-2021 Remi Collet
+# Copyright (c) 2012-2022 Remi Collet
 # License: CC-BY-SA
 # http://creativecommons.org/licenses/by-sa/4.0/
 #
@@ -23,10 +23,12 @@
 Summary:       Communicate with any AMQP compliant server
 Name:          php-pecl-amqp
 Version:       %{upstream_version}%{?upstream_prever:~%{upstream_lower}}
-Release:       1%{?dist}
+Release:       4%{?dist}
 License:       PHP
 URL:           https://pecl.php.net/package/amqp
 Source0:       https://pecl.php.net/get/%{pecl_name}-%{upstream_version}%{?upstream_prever}.tgz
+
+Patch0:        https://patch-diff.githubusercontent.com/raw/php-amqp/php-amqp/pull/418.patch
 
 BuildRequires: make
 BuildRequires: gcc
@@ -63,6 +65,7 @@ sed -e 's/role="test"/role="src"/' \
 
 mv %{pecl_name}-%{upstream_version}%{?upstream_prever} NTS
 cd NTS
+%patch0 -p1 -b .php82
 
 sed -e 's/CFLAGS="-I/CFLAGS="$CFLAGS -I/' -i config.m4
 
@@ -181,6 +184,7 @@ done
 %if %{with_tests}
 mkdir log run base
 : Launch the RabbitMQ service
+export LANG=C.UTF-8
 export RABBITMQ_PID_FILE=$PWD/run/pid
 export RABBITMQ_LOG_BASE=$PWD/log
 export RABBITMQ_MNESIA_BASE=$PWD/base
@@ -227,6 +231,11 @@ exit $ret
 
 
 %changelog
+* Wed Oct 05 2022 Remi Collet <remi@remirepo.net> - 1.11.0-4
+- rebuild for https://fedoraproject.org/wiki/Changes/php82
+- add patch for test suite with 8.2 from
+  https://github.com/php-amqp/php-amqp/pull/418
+
 * Wed Dec  1 2021 Alexander Ursu <alexander.ursu@gmail.com> - 1.11.0
 - update to 1.11.0
 
@@ -390,4 +399,3 @@ exit $ret
 * Sat Mar 10 2012 Remi Collet <remi@fedoraproject.org> - 1.0.1-1
 - Initial RPM release without ZTS extension
 - open request for LICENSE file https://bugs.php.net/61337
-
