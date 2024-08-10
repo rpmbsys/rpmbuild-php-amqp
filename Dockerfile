@@ -3,11 +3,18 @@ ARG image=php-8.3
 
 FROM aursu/pearbuild:${os}-${image}
 
+# https://www.rabbitmq.com/docs/install-rpm
+COPY system/etc/yum.repos.d/rabbitmq.repo /etc/yum.repos.d/rabbitmq.repo
+
+# install these dependencies from standard OS repositories
 RUN dnf -y install \
-        centos-release-rabbitmq-38 \
+        logrotate \
+        socat \
     && dnf clean all && rm -rf /var/cache/dnf
 
+# install RabbitMQ and zero dependency Erlang
 RUN dnf -y install \
+        erlang \
         rabbitmq-server \
         librabbitmq-devel \
     && dnf clean all && rm -rf /var/cache/dnf \
