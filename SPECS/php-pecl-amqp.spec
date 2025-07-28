@@ -1,24 +1,17 @@
 # Fedora spec file for php-pecl-amqp
 #
-# Copyright (c) 2012-2023 Remi Collet
+# Copyright (c) 2012-2024 Remi Collet
 # License: CC-BY-SA-4.0
 # http://creativecommons.org/licenses/by-sa/4.0/
 #
 # Please, preserve the changelog entries
 #
 
-# we don't want -z defs linker flag
-%undefine _strict_symbol_defs_build
-
-%define _debugsource_template %{nil}
-%define debug_package %{nil}
-
-%global pecl_name   amqp
 %bcond_with         tests
-%global with_zts    0%{!?_without_zts:%{?__ztsphp:1}}
+%global pecl_name   amqp
 %global ini_name    40-%{pecl_name}.ini
 
-%global upstream_version 2.1.1
+%global upstream_version 2.1.2
 #global upstream_prever  RC1
 #global upstream_lower   rc1
 %global sources          %{pecl_name}-%{upstream_version}%{?upstream_prever}
@@ -27,10 +20,12 @@
 Summary:       Communicate with any AMQP compliant server
 Name:          php-pecl-amqp
 Version:       %{upstream_version}%{?upstream_prever:~%{upstream_lower}}
-Release:       1%{?dist}
+Release:       8%{?dist}
 License:       PHP-3.01
 URL:           https://pecl.php.net/package/amqp
 Source0:       https://pecl.php.net/get/%{pecl_name}-%{upstream_version}%{?upstream_prever}.tgz
+
+ExcludeArch:   %{ix86}
 
 BuildRequires: make
 BuildRequires: gcc
@@ -67,7 +62,6 @@ sed -e 's/role="test"/role="src"/' \
     -i package.xml
 
 cd %{sources}
-
 # Upstream often forget to change this
 extver=$(sed -n '/#define PHP_AMQP_VERSION /{s/.* "//;s/".*$//;p}' php_amqp_version.h)
 if test "x${extver}" != "x%{upstream_version}%{?upstream_prever}"; then
@@ -129,60 +123,39 @@ extension = %{pecl_name}.so
 ;amqp.deserialization_depth = 128
 EOF
 
-mkdir NTS
-%if %{with_zts}
-mkdir ZTS
-%endif
-
 
 %build
 cd %{sources}
 %{__phpize}
+sed -e 's/INSTALL_ROOT/DESTDIR/' -i build/Makefile.global
 
-cd ../NTS
 %configure --with-php-config=%{__phpconfig}
-make %{?_smp_mflags}
-
-%if %{with_zts}
-cd ../ZTS
-%configure --with-php-config=%{__ztsphpconfig}
-make %{?_smp_mflags}
-%endif
+%make_build
 
 
 %install
-make -C NTS install INSTALL_ROOT=%{buildroot}
-
-# Drop in the bit of configuration
-install -Dpm 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
-
-# Install XML package description
-install -Dpm 644 package.xml %{buildroot}%{pecl_xmldir}/%{name}.xml
-
-%if %{with_zts}
-make -C ZTS install INSTALL_ROOT=%{buildroot}
-install -Dpm 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
-%endif
-
-# Documentation
 cd %{sources}
+
+: Install the extension
+%make_install
+
+: Drop in the bit of configuration
+install -Dpm 644 ../%{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
+
+: Install XML package description
+install -Dpm 644 ../package.xml %{buildroot}%{pecl_xmldir}/%{name}.xml
+
+: Install the Documentation
 for i in $(grep 'role="doc"' ../package.xml | sed -e 's/^.*name="//;s/".*$//')
 do install -Dpm 644 $i %{buildroot}%{pecl_docdir}/%{pecl_name}/$i
 done
 
 
 %check
-: Minimal load test for NTS extension
+: Minimal load test for the extension
 %{__php} --no-php-ini \
-    --define extension=NTS/modules/%{pecl_name}.so \
+    --define extension=%{sources}/modules/%{pecl_name}.so \
     -m | grep '^%{pecl_name}$'
-
-%if %{with_zts}
-: Minimal load test for ZTS extension
-%{__ztsphp} --no-php-ini \
-    --define extension=ZTS/modules/%{pecl_name}.so \
-    -m | grep '^%{pecl_name}$'
-%endif
 
 %if %{with tests}
 mkdir log run base
@@ -197,15 +170,9 @@ export PHP_AMQP_HOST=localhost
 
 ret=0
 pushd %{sources}
-: Run the upstream test Suite for NTS extension
-TEST_PHP_ARGS="-n -d extension=$PWD/../NTS/modules/%{pecl_name}.so" \
+: Run the upstream test Suite for the extension
+TEST_PHP_ARGS="-n -d extension=$PWD/modules/%{pecl_name}.so" \
 %{__php} -n run-tests.php -q --show-diff || ret=1
-
-%if %{with_zts}
-: Run the upstream test Suite for ZTS extension
-TEST_PHP_ARGS="-n -d extension=$PWD/../ZTS/modules/%{pecl_name}.so" \
-%{__ztsphp} -n run-tests.php -q --show-diff || ret=1
-%endif
 popd
 
 : Cleanup
@@ -226,34 +193,104 @@ exit $ret
 %config(noreplace) %{php_inidir}/%{ini_name}
 %{php_extdir}/%{pecl_name}.so
 
-%if %{with_zts}
-%config(noreplace) %{php_ztsinidir}/%{ini_name}
-%{php_ztsextdir}/%{pecl_name}.so
-%endif
-
 
 %changelog
+* Fri Jul 25 2025 Fedora Release Engineering <releng@fedoraproject.org> - 2.1.2-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_43_Mass_Rebuild
+
+* Sat Jan 18 2025 Fedora Release Engineering <releng@fedoraproject.org> - 2.1.2-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_42_Mass_Rebuild
+
+* Fri Oct 18 2024 Remi Collet <remi@fedoraproject.org> - 2.1.2-6
+- modernize the spec file
+
+* Mon Oct 14 2024 Remi Collet <remi@fedoraproject.org> - 2.1.2-5
+- rebuild for https://fedoraproject.org/wiki/Changes/php84
+
+* Fri Jul 19 2024 Fedora Release Engineering <releng@fedoraproject.org> - 2.1.2-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
+
+* Fri Apr 12 2024 Remi Collet <remi@remirepo.net> - 2.1.2-3
+- drop 32-bit support
+  https://fedoraproject.org/wiki/Changes/php_no_32_bit
+
+* Thu Jan 25 2024 Fedora Release Engineering <releng@fedoraproject.org> - 2.1.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
+
+* Mon Jan 22 2024 Remi Collet <remi@remirepo.net> - 2.1.2-1
+- update to 2.1.2
+
+* Sun Jan 21 2024 Fedora Release Engineering <releng@fedoraproject.org> - 2.1.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
+
 * Fri Oct 13 2023 Remi Collet <remi@remirepo.net> - 2.1.1-1
 - update to 2.1.1
+
+* Tue Oct 03 2023 Remi Collet <remi@remirepo.net> - 2.1.0-2
+- rebuild for https://fedoraproject.org/wiki/Changes/php83
+
+* Thu Sep  7 2023 Remi Collet <remi@remirepo.net> - 2.1.0-1
+- update to 2.1.0
+
+* Mon Aug 21 2023 Remi Collet <remi@remirepo.net> - 2.0.0-1
+- update to 2.0.0
+- build out of sources tree
+
+* Fri Jul 21 2023 Fedora Release Engineering <releng@fedoraproject.org> - 1.11.0-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_39_Mass_Rebuild
+
+* Fri Mar 31 2023 Remi Collet <remi@remirepo.net> - 1.11.0-6
+- use SPDX license ID
+
+* Fri Jan 20 2023 Fedora Release Engineering <releng@fedoraproject.org> - 1.11.0-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_38_Mass_Rebuild
 
 * Wed Oct 05 2022 Remi Collet <remi@remirepo.net> - 1.11.0-4
 - rebuild for https://fedoraproject.org/wiki/Changes/php82
 - add patch for test suite with 8.2 from
   https://github.com/php-amqp/php-amqp/pull/418
 
-* Wed Dec  1 2021 Alexander Ursu <alexander.ursu@gmail.com> - 1.11.0
+* Fri Jul 22 2022 Fedora Release Engineering <releng@fedoraproject.org> - 1.11.0-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
+
+* Fri Jan 21 2022 Fedora Release Engineering <releng@fedoraproject.org> - 1.11.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
+
+* Tue Dec  7 2021 Remi Collet <remi@remirepo.net> - 1.11.0-1
 - update to 1.11.0
 
 * Tue Nov  2 2021 Remi Collet <remi@remirepo.net> - 1.11.0~rc1-1
 - update to 1.11.0RC1
+
+* Thu Oct 28 2021 Remi Collet <remi@remirepo.net> - 1.11.0~beta-3
+- rebuild for https://fedoraproject.org/wiki/Changes/php81
+
+* Fri Jul 23 2021 Fedora Release Engineering <releng@fedoraproject.org> - 1.11.0~beta-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
+
+* Wed Mar 10 2021 Remi Collet <remi@remirepo.net> - 1.11.0~beta-1
+- update to 1.11.0beta
+- drop patched merged upstream
 
 * Thu Mar  4 2021 Remi Collet <remi@remirepo.net> - 1.10.2-4
 - rebuild for https://fedoraproject.org/wiki/Changes/php80
 - add patches for PHP 8 from upstream and
   https://github.com/php-amqp/php-amqp/pull/383
 
+* Wed Jan 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 1.10.2-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
+
+* Tue Jul 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1.10.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
+
 * Mon Apr  6 2020 Remi Collet <remi@remirepo.net> - 1.10.2-1
 - update to 1.10.2
+
+* Thu Jan 30 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1.9.4-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
+
+* Thu Oct 03 2019 Remi Collet <remi@remirepo.net> - 1.9.4-4
+- rebuild for https://fedoraproject.org/wiki/Changes/php74
 
 * Fri Jul 26 2019 Fedora Release Engineering <releng@fedoraproject.org> - 1.9.4-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
@@ -404,3 +441,4 @@ exit $ret
 * Sat Mar 10 2012 Remi Collet <remi@fedoraproject.org> - 1.0.1-1
 - Initial RPM release without ZTS extension
 - open request for LICENSE file https://bugs.php.net/61337
+
